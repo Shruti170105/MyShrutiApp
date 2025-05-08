@@ -1,69 +1,47 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" 
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
-         http://maven.apache.org/xsd/maven-4.0.0.xsd">
-         
-  <modelVersion>4.0.0</modelVersion>
+pipeline {
+    agent any  // Use any available agent
 
-  <groupId>com.example</groupId>
-  <artifactId>MyMavenApp5</artifactId>
-  <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
+    tools {
+        maven 'Maven'  // Ensure this matches the name configured in Jenkins
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'master', url: 'https://github.com/Shruti170105/MyShrutiApp.git'
+            }
+        }
 
-  <name>MyMavenApp5</name>
-  <url>http://maven.apache.org</url>
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'  // Run Maven build
+            }
+        }
 
-  <!-- Set Java version globally -->
-  <properties>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
-  </properties>
+        stage('Test') {
+            steps {
+                sh 'mvn test'  // Run unit tests
+            }
+        }
 
-  <dependencies>
-    <!-- Example dependency for JUnit testing -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+        
+        
+       
+        stage('Run Application') {
+            steps {
+                // Start the JAR application
+                sh 'java -jar target/MyShrutiApp-1.0-SNAPSHOT.jar'
+            }
+        }
 
-  <build>
-    <plugins>
-      <!-- Maven Compiler Plugin -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
-        <configuration>
-          <source>11</source>
-          <target>11</target>
-        </configuration>
-      </plugin>
+        
+    }
 
-      <!-- Maven Surefire Plugin (for running tests) -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.2</version>
-      </plugin>
-
-      <!-- Maven Jar Plugin (for creating runnable jar) -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.1.0</version>
-        <configuration>
-          <archive>
-            <manifestEntries>
-              <Main-Class>com.example.App</Main-Class>
-            </manifestEntries>
-          </archive>
-        </configuration>
-      </plugin>
-
-    </plugins>
-  </build>
-
-</project>
+    post {
+        success {
+            echo 'Build and deployment successful!'
+        }
+        failure {
+            echo 'Build failed!'
+        }
+    }
+}
